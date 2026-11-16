@@ -5,3 +5,10 @@ export function loose(key: string, left: number[], right: number[], free: unknow
 
   return [picked, joined, free];
 }
+
+export function looseCasts(free: unknown) {
+  const shape = { a: 1 } as { a: number };
+  const text = free as unknown as string;
+
+  return [shape, text];
+}

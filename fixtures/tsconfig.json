@@ -4,5 +4,5 @@
     "noEmit": true,
     "allowImportingTsExtensions": false
   },
-  "include": ["*.ts", "*.vue", "__tests__/*.ts", "../src/array.ts"]
+  "include": ["**/*.ts", "**/*.vue", "../src/array.ts"]
 }

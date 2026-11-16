@@ -29,11 +29,17 @@
       "default": "./dist/plugin.js"
     },
     "./tsconfig/*.json": "./tsconfig/*.json",
+    "./oxlintrc.json": "./oxlintrc.json",
+    "./cspell.json": "./cspell.json",
+    "./jscpd.json": "./jscpd.json",
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
     "tsconfig",
+    "oxlintrc.json",
+    "cspell.json",
+    "jscpd.json",
     ".editorconfig",
     "README.md",
     "LICENSE"
@@ -62,13 +68,37 @@
     "typescript-eslint": "8.71.2"
   },
   "peerDependencies": {
+    "@intlify/eslint-plugin-vue-i18n": ">=4",
+    "@vitest/eslint-plugin": ">=1",
     "eslint": ">=9",
+    "eslint-plugin-better-tailwindcss": ">=4",
+    "eslint-plugin-oxlint": ">=1",
+    "eslint-plugin-playwright": ">=2",
     "eslint-plugin-vue": ">=10",
+    "jsonc-eslint-parser": ">=3",
     "typescript": ">=5",
     "vue-eslint-parser": ">=10"
   },
   "peerDependenciesMeta": {
+    "@intlify/eslint-plugin-vue-i18n": {
+      "optional": true
+    },
+    "@vitest/eslint-plugin": {
+      "optional": true
+    },
+    "eslint-plugin-better-tailwindcss": {
+      "optional": true
+    },
+    "eslint-plugin-oxlint": {
+      "optional": true
+    },
+    "eslint-plugin-playwright": {
+      "optional": true
+    },
     "eslint-plugin-vue": {
+      "optional": true
+    },
+    "jsonc-eslint-parser": {
       "optional": true
     },
     "vue-eslint-parser": {
@@ -76,10 +106,20 @@
     }
   },
   "devDependencies": {
+    "@intlify/eslint-plugin-vue-i18n": "4.5.1",
     "@types/node": "^22.0.0",
     "@typescript-eslint/rule-tester": "8.71.2",
+    "@vitest/eslint-plugin": "1.6.27",
+    "cspell": "9.8.0",
     "eslint": "10.12.0",
+    "eslint-plugin-better-tailwindcss": "4.10.0",
+    "eslint-plugin-oxlint": "1.82.0",
+    "eslint-plugin-playwright": "2.12.1",
     "eslint-plugin-vue": "10.11.1",
+    "jscpd": "5.4.1",
+    "jsonc-eslint-parser": "3.3.0",
+    "oxlint": "1.82.0",
+    "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "vitest": "4.1.11",
     "vue-eslint-parser": "10.4.1"

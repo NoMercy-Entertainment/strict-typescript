@@ -11,3 +11,12 @@ export function bad(value: number, key: string, left: number[], right: number[],
   total += 1;
   return [total, label, size, count, picked, joined, free];
 }
+
+export function hygiene(free: unknown) {
+  // TODO tidy this up
+  // compat alias for the old name
+  const q = { a: 1 } as { a: number };
+  const text = free as unknown as string;
+
+  return [q, text];
+}
