@@ -766,6 +766,7 @@ export const noRedundantTypeAnnotation = ESLintUtils.RuleCreator.withoutDocs({
       const keys = context.sourceCode.visitorKeys[node.type] ?? [];
 
       return keys.flatMap((key) => {
+        // visitorKeys names child fields the AST node types do not list as an index signature.
         const child = (node as unknown as Record<string, unknown>)[key];
         const children = Array.isArray(child)
           ? child
