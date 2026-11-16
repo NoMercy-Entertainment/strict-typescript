@@ -11,3 +11,5 @@ export function generated(value: any) {
   if (value) total = 1;
   return total;
 }
+
+export const pick = (v: unknown) => v;

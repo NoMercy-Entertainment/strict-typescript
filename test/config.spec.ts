@@ -229,6 +229,23 @@ describe('strict({ generated })', () => {
     expect(ids(without)).toContain('strict/body-shape');
     expect(exempt).toEqual([]);
   });
+
+  it('exempts generated files from the unknown, hygiene and Vue template rules too', async () => {
+    const tsWithout = ids(await lint('gen/generated.ts', { typeChecked: false }));
+    const vueWithout = ids(await lint('gen/GeneratedPanel.vue', { typeChecked: false, vue: true }));
+    const tsExempt = await lint('gen/generated.ts', { typeChecked: false, generated: ['gen/**'] });
+    const vueExempt = await lint('gen/GeneratedPanel.vue', {
+      typeChecked: false,
+      vue: true,
+      generated: ['gen/**'],
+    });
+
+    expect(tsWithout).toContain('no-restricted-syntax');
+    expect(tsWithout).toContain('strict/no-single-letter-ident');
+    expect(vueWithout).toContain('vue/html-indent');
+    expect(tsExempt).toEqual([]);
+    expect(vueExempt).toEqual([]);
+  });
 });
 
 describe('strict({ importBoundaries })', () => {

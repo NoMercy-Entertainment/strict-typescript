@@ -411,6 +411,7 @@ export function strict(options: StrictOptions = {}): Linter.Config[] {
           {
             name: 'strict/format-vue-template',
             files: ['**/*.vue'],
+            ...skipGenerated,
             rules: {
               '@stylistic/max-len': 'off',
               'vue/no-restricted-syntax': [
@@ -555,6 +556,7 @@ export function strict(options: StrictOptions = {}): Linter.Config[] {
     {
       name: 'strict/merge-lists',
       files,
+      ...skipGenerated,
       rules: { 'no-restricted-syntax': restrictedSyntax(arrayHelpers, true) },
     },
     {
@@ -566,6 +568,7 @@ export function strict(options: StrictOptions = {}): Linter.Config[] {
     {
       name: 'strict/hygiene',
       files,
+      ...skipGenerated,
       plugins: strictPlugin,
       rules: {
         'strict/no-single-letter-ident': 'error',
