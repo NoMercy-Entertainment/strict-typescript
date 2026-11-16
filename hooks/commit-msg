@@ -1,0 +1,31 @@
+#!/bin/sh
+# strict-typescript hook: refuses a commit message that carries an attribution trailer.
+# It matches the trailer anywhere in the message, in any casing, with any spacing or
+# punctuation between the words. A hook that was in the project before runs after this check,
+# as commit-msg.local. Remove this hook with: npx strict-typescript hooks uninstall
+
+msg_file="$1"
+dir=$(dirname "$0")
+
+if [ -f "$msg_file" ]; then
+  body=$(grep -v '^[[:space:]]*#' "$msg_file")
+
+  CO='[Cc][Oo][-_ ]*[Aa][Uu][Tt][Hh][Oo][Rr]([Ee][Dd])?([-_ ]*[Bb][Yy])?[[:space:]]*:'
+  SESSION='[Cc][Ll][Aa][Uu][Dd][Ee][-_ ]*[Ss][Ee][Ss][Ss][Ii][Oo][Nn][[:space:]]*:'
+  GENERATED='[Gg]enerated[[:space:]]+with[[:space:]]+\[?[Cc]laude'
+
+  hit=$(printf '%s\n' "$body" | grep -nE "$CO|$SESSION|$GENERATED" | head -3)
+
+  if [ -n "$hit" ]; then
+    echo "commit rejected: the message carries an attribution trailer." >&2
+    printf '%s\n' "$hit" | sed 's/^/    /' >&2
+    echo "Remove the trailer and commit again." >&2
+    exit 1
+  fi
+fi
+
+if [ -f "$dir/commit-msg.local" ]; then
+  sh "$dir/commit-msg.local" "$@" || exit $?
+fi
+
+exit 0

@@ -1,0 +1,64 @@
+#!/bin/sh
+# strict-typescript hook: runs the lint and typecheck scripts on the pushed commit before the push.
+# The check runs in its own worktree under .git/strict-typescript-gate, so unfinished work in the
+# working tree never blocks a push of finished commits. The worktree installs its own packages,
+# and installs again when the lockfile changes. A hook that was in the project before runs
+# first, as pre-push.local.
+# Skip once with STRICT_TS_SKIP_PREPUSH=1 only when CI is the thing being fixed.
+
+dir=$(dirname "$0")
+input=$(cat)
+
+if [ -f "$dir/pre-push.local" ]; then
+  printf '%s\n' "$input" | sh "$dir/pre-push.local" "$@" || exit $?
+fi
+
+[ "$STRICT_TS_SKIP_PREPUSH" = "1" ] && exit 0
+
+zero=0000000000000000000000000000000000000000
+pushed=""
+
+while read -r _local_ref local_sha _remote_ref _remote_sha; do
+  [ -z "$local_sha" ] && continue
+  [ "$local_sha" = "$zero" ] && continue
+  pushed="$local_sha"
+done <<EOF
+$input
+EOF
+
+[ -z "$pushed" ] && exit 0
+
+gate="$(git rev-parse --absolute-git-dir)/strict-typescript-gate"
+echo "pre-push: running lint and typecheck on $pushed"
+
+if [ -d "$gate" ]; then
+  git -C "$gate" checkout --quiet --force --detach "$pushed" || { echo "pre-push: gate checkout failed"; exit 1; }
+  git -C "$gate" clean -fdq -e node_modules
+else
+  git worktree add --quiet --detach "$gate" "$pushed" || { echo "pre-push: gate worktree failed"; exit 1; }
+fi
+
+if [ -f "$gate/package-lock.json" ]; then
+  lock=$(git -C "$gate" hash-object package-lock.json)
+else
+  lock=$(git -C "$gate" hash-object package.json)
+fi
+
+stamp="$gate/node_modules/.gate-lock-hash"
+
+if [ ! -f "$stamp" ] || [ "$(cat "$stamp")" != "$lock" ]; then
+  echo "pre-push: installing the gate's packages"
+  if [ -f "$gate/package-lock.json" ]; then
+    install="ci"
+  else
+    install="install"
+  fi
+  npm --prefix "$gate" "$install" --no-audit --no-fund > /dev/null || { echo "pre-push: npm $install failed, push blocked"; exit 1; }
+  mkdir -p "$gate/node_modules"
+  echo "$lock" > "$stamp"
+fi
+
+npm --prefix "$gate" run --if-present lint || { echo "pre-push: lint failed, push blocked"; exit 1; }
+npm --prefix "$gate" run --if-present typecheck || { echo "pre-push: typecheck failed, push blocked"; exit 1; }
+
+exit 0
