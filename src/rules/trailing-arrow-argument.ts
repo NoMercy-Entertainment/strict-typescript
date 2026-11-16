@@ -20,7 +20,11 @@ import {
 // Owner 2026-10-13, on `() =>` with `({` on the next line: "this is terrible for reading". An object
 // or array body opens on the `=>` line, like a block body.
 
-const indentUnit = '  ';
+function indentUnitOf(source: TSESLint.SourceCode): string {
+  return /^\t/m.test(source.text)
+    ? '\t'
+    : '  ';
+}
 
 function lineIndent(source: TSESLint.SourceCode, line: number): string {
   return /^\s*/.exec(source.lines[line - 1] ?? '')?.[0] ?? '';
@@ -121,7 +125,7 @@ export const trailingArrowArgument = ESLintUtils.RuleCreator.withoutDocs({
 
         if (!sameLine) return;
 
-        const indent = lineIndent(source, arrowToken.loc.end.line) + indentUnit;
+        const indent = lineIndent(source, arrowToken.loc.end.line) + indentUnitOf(source);
 
         context.report({
           node: arrowToken,

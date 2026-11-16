@@ -29,6 +29,12 @@ tester.run('members-per-line', membersPerLine, {
     'const all = {\n  ...labels,\n  ...words,\n  roles: 1,\n}',
   ],
   invalid: [
+    // A tab-indented file gets tab indents from the fix.
+    {
+      code: 'function f() {\n\tconst q: { a: 1, b: 2, c: 3 } = x\n}',
+      output: 'function f() {\n\tconst q: {\n\t\ta: 1;\n\t\tb: 2;\n\t\tc: 3;\n\t} = x\n}',
+      errors: [{ messageId: 'perLine' }],
+    },
     {
       code: 'type Query<T> = { data: T; isPending: boolean; isError: boolean }',
       output: 'type Query<T> = {\n  data: T;\n  isPending: boolean;\n  isError: boolean;\n}',

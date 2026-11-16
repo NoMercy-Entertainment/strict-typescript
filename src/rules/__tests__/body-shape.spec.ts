@@ -33,6 +33,17 @@ tester.run('body-shape', bodyShape, {
     'function f(a: boolean, b: boolean) {\n  if (a) {\n    g()\n  } else if (b) {\n    g()\n  }\n}',
   ],
   invalid: [
+    // A tab-indented file gets tab indents from the fix.
+    {
+      code: 'function f(a: boolean) {\n\tif (a) return 1\n}',
+      output: 'function f(a: boolean) {\n\tif (a)\n\t\treturn 1\n}',
+      errors: [{ messageId: 'nextLine' }],
+    },
+    {
+      code: 'function f(a: boolean) {\n\tif (a) b = 1\n}',
+      output: 'function f(a: boolean) {\n\tif (a) {\n\t\tb = 1\n\t}\n}',
+      errors: [{ messageId: 'block' }],
+    },
     {
       code: 'function f(a: boolean) {\n  if (a) return 1\n}',
       output: 'function f(a: boolean) {\n  if (a)\n    return 1\n}',

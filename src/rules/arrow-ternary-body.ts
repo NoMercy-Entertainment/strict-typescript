@@ -12,7 +12,11 @@ import { AST_NODE_TYPES, ESLintUtils, type TSESLint } from '@typescript-eslint/u
 // ternary starts that ternary on the next line, one level in, without the wrapping brackets;
 // @stylistic/multiline-ternary then puts each branch on its own line.
 
-const indentUnit = '  ';
+function indentUnitOf(source: TSESLint.SourceCode): string {
+  return /^\t/m.test(source.text)
+    ? '\t'
+    : '  ';
+}
 
 function lineIndent(source: TSESLint.SourceCode, line: number): string {
   return /^\s*/.exec(source.lines[line - 1] ?? '')?.[0] ?? '';
@@ -51,7 +55,7 @@ export const arrowTernaryBody = ESLintUtils.RuleCreator.withoutDocs({
 
         if (!wrapped && arrowToken.loc.end.line !== body.loc.start.line) return;
 
-        const indent = lineIndent(source, arrowToken.loc.end.line) + indentUnit;
+        const indent = lineIndent(source, arrowToken.loc.end.line) + indentUnitOf(source);
 
         context.report({
           node: body,

@@ -41,6 +41,12 @@ tester.run('trailing-arrow-argument', trailingArrowArgument, {
     'pick(rows, (row) => row.id.value)',
   ],
   invalid: [
+    // A tab-indented file gets tab indents from the fix.
+    {
+      code: '\tx = 1\npick(rows, (row) => row.id.value + 1)',
+      output: '\tx = 1\npick(rows, (row) =>\n\trow.id.value + 1)',
+      errors: [{ messageId: 'bodyNextLine' }],
+    },
     {
       code: 'usePanelState(scripts, () =>\n  false)',
       output: 'usePanelState(scripts, () => false)',

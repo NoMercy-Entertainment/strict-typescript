@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `arrow-ternary-body`, `body-shape`, `members-per-line` and `trailing-arrow-argument` now indent their fixes with the file's own indent: a tab in a tab-indented file, two spaces otherwise. Before, `--fix` wrote two spaces into tab-indented code.
+
 ## 0.1.0
 
 First release.

@@ -28,6 +28,12 @@ tester.run('arrow-ternary-body', arrowTernaryBody, {
     'const make = () => ({ a: 1 })',
   ],
   invalid: [
+    // A tab-indented file gets tab indents from the fix.
+    {
+      code: 'const pick = (a: boolean) => (a\n\t? 1\n\t: 2)\n',
+      output: 'const pick = (a: boolean) =>\n\ta\n\t? 1\n\t: 2\n',
+      errors: [{ messageId: 'nextLine' }],
+    },
     {
       code: 'const pick = (a: boolean) => (a\n  ? 1\n  : 2)',
       output: 'const pick = (a: boolean) =>\n  a\n  ? 1\n  : 2',

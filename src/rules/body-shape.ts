@@ -19,7 +19,11 @@ import {
 // value goes on the next line one level in, and every other body sits in a block. A loop body
 // always sits in a block.
 
-const indentUnit = '  ';
+function indentUnitOf(source: TSESLint.SourceCode): string {
+  return /^\t/m.test(source.text)
+    ? '\t'
+    : '  ';
+}
 
 type Shape = 'sameLine' | 'nextLine' | 'block';
 
@@ -74,7 +78,7 @@ export const bodyShape = ESLintUtils.RuleCreator.withoutDocs({
         fix: (fixer) =>
           fixer.replaceTextRange(
             [before.range[1], body.range[1]],
-            ` {\n${indent}${indentUnit}${text}\n${indent}}`,
+            ` {\n${indent}${indentUnitOf(source)}${text}\n${indent}}`,
           ),
       });
     }
@@ -122,7 +126,7 @@ export const bodyShape = ESLintUtils.RuleCreator.withoutDocs({
           node: body,
           messageId: 'nextLine',
           fix: (fixer) =>
-            fixer.replaceTextRange([before.range[1], body.range[0]], `\n${indent}${indentUnit}`),
+            fixer.replaceTextRange([before.range[1], body.range[0]], `\n${indent}${indentUnitOf(source)}`),
         });
       }
 

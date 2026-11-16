@@ -14,7 +14,12 @@ import { ESLintUtils, type TSESLint, type TSESTree } from '@typescript-eslint/ut
 // every entry on its own line, even when it fits on one.
 
 const minEntries = 3;
-const indentUnit = '  ';
+
+function indentUnitOf(source: TSESLint.SourceCode): string {
+  return /^\t/m.test(source.text)
+    ? '\t'
+    : '  ';
+}
 
 type Braced = TSESTree.ObjectExpression | TSESTree.TSTypeLiteral;
 type Entry = TSESTree.ObjectLiteralElement | TSESTree.TypeElement;
@@ -56,7 +61,7 @@ export const membersPerLine = ESLintUtils.RuleCreator.withoutDocs({
 
       const indent = lineIndent(source, node.loc.start.line);
       const lines = entries
-        .map((entry) => indent + indentUnit + entryText(source, entry) + separator)
+        .map((entry) => indent + indentUnitOf(source) + entryText(source, entry) + separator)
         .join('\n');
 
       context.report({
