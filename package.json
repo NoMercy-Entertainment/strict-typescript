@@ -1,6 +1,6 @@
 {
   "name": "@nomercy-entertainment/strict-typescript",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "One import for the NoMercy strict TypeScript rules: an ESLint flat config, custom rules, tsconfig presets and an editorconfig.",
   "type": "module",
   "license": "Apache-2.0",
