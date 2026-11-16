@@ -1,0 +1,90 @@
+{
+  "name": "@nomercy-entertainment/strict-typescript",
+  "version": "0.1.0",
+  "description": "One import for the NoMercy strict TypeScript rules: an ESLint flat config, custom rules, tsconfig presets and an editorconfig.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "NoMercy Entertainment",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NoMercy-Entertainment/strict-typescript.git"
+  },
+  "homepage": "https://github.com/NoMercy-Entertainment/strict-typescript#readme",
+  "bugs": {
+    "url": "https://github.com/NoMercy-Entertainment/strict-typescript/issues"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./array": {
+      "types": "./dist/array.d.ts",
+      "default": "./dist/array.js"
+    },
+    "./plugin": {
+      "types": "./dist/plugin.d.ts",
+      "default": "./dist/plugin.js"
+    },
+    "./tsconfig/*.json": "./tsconfig/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "tsconfig",
+    ".editorconfig",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "eslint",
+    "eslint-config",
+    "typescript",
+    "tsconfig",
+    "strict",
+    "nomercy"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@stylistic/eslint-plugin": "5.10.0",
+    "@typescript-eslint/utils": "8.71.2",
+    "eslint-plugin-unused-imports": "4.4.1",
+    "typescript-eslint": "8.71.2"
+  },
+  "peerDependencies": {
+    "eslint": ">=9",
+    "eslint-plugin-vue": ">=10",
+    "typescript": ">=5",
+    "vue-eslint-parser": ">=10"
+  },
+  "peerDependenciesMeta": {
+    "eslint-plugin-vue": {
+      "optional": true
+    },
+    "vue-eslint-parser": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/rule-tester": "8.71.2",
+    "eslint": "10.12.0",
+    "eslint-plugin-vue": "10.11.1",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11",
+    "vue-eslint-parser": "10.4.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
