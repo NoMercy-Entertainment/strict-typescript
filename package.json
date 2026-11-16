@@ -34,14 +34,20 @@
     "./jscpd.json": "./jscpd.json",
     "./package.json": "./package.json"
   },
+  "bin": {
+    "strict-typescript": "./dist/bin.js"
+  },
   "files": [
     "dist",
+    "docs",
+    "hooks",
     "tsconfig",
     "oxlintrc.json",
     "cspell.json",
     "jscpd.json",
     ".editorconfig",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "publishConfig": {
