@@ -1,3 +1,11 @@
+// -----------------------------------------------------------------------------
+//  Copyright (c) NoMercy Entertainment
+//
+//  Licensed under the Apache License, Version 2.0. See LICENSE for details.
+//
+//  SPDX-License-Identifier: Apache-2.0
+// -----------------------------------------------------------------------------
+
 export function loose(key: string, left: number[], right: number[], free: unknown) {
   const table = { a: 1 };
   const picked = key as keyof typeof table;

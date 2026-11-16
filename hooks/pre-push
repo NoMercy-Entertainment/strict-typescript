@@ -1,4 +1,11 @@
 #!/bin/sh
+# -----------------------------------------------------------------------------
+#  Copyright (c) NoMercy Entertainment
+#
+#  Licensed under the Apache License, Version 2.0. See LICENSE for details.
+#
+#  SPDX-License-Identifier: Apache-2.0
+# -----------------------------------------------------------------------------
 # strict-typescript hook: runs the lint and typecheck scripts on the pushed commit before the push.
 # The check runs in its own worktree under .git/strict-typescript-gate, so unfinished work in the
 # working tree never blocks a push of finished commits. The worktree installs its own packages,
