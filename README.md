@@ -1,10 +1,8 @@
 # @nomercy-entertainment/strict-typescript
 
-One import gives any TypeScript project the NoMercy strict rules.
-
-You get an ESLint flat config, twelve custom rules, tsconfig presets, an editorconfig and
-shared configs for oxlint, cspell and jscpd.
-Set it up once. Never copy rule files between projects again.
+One package gives any TypeScript project the NoMercy strict rules.
+It holds an ESLint flat config, twelve custom rules, five tsconfig presets, an editorconfig, shared cspell, jscpd and oxlint configs, two git hooks, and a command that sets all of it up.
+Add it once and never copy rule files between projects again.
 
 ## Install
 
@@ -12,15 +10,30 @@ Set it up once. Never copy rule files between projects again.
 npm i -D @nomercy-entertainment/strict-typescript eslint typescript
 ```
 
-For Vue projects, add two more packages:
+Vue projects also need `eslint-plugin-vue`, `vue-eslint-parser` and `vue-tsc`.
+
+## Quick start
 
 ```sh
-npm i -D eslint-plugin-vue vue-eslint-parser
+npx strict-typescript init
 ```
+
+`init` writes `eslint.config.js`, `tsconfig.json`, `.editorconfig`, `cspell.json` and `.jscpd.json`.
+It adds the scripts `lint`, `lint:fix`, `typecheck` and `check`, and installs the git hooks.
+It never overwrites a file. It prints `kept <file>` and the line to merge instead.
+Add `--vue` for a Vue project or `--node` for Node. See [the CLI](docs/cli.md).
+
+Then run:
+
+```sh
+npm run check
+```
+
+`check` prints one `PASS` or `FAIL` line per tool and exits with 1 when any tool fails.
 
 ## Use it
 
-### TypeScript (browser or library)
+### TypeScript
 
 `eslint.config.js`
 
@@ -41,9 +54,7 @@ export default strict();
 
 ### Node
 
-`eslint.config.js` is the same as above.
-
-`tsconfig.json`
+The same `eslint.config.js`. Extend the `node` preset, which needs `@types/node`:
 
 ```json
 {
@@ -54,88 +65,103 @@ export default strict();
 
 ### Vue
 
-`eslint.config.js`
-
 ```js
-import strict from '@nomercy-entertainment/strict-typescript';
-
 export default strict({ vue: true });
 ```
 
-`tsconfig.json`
+Extend the `vue` preset: `@nomercy-entertainment/strict-typescript/tsconfig/vue.json`.
+The Vue packages load only when `vue` is true. If they are missing, `strict({ vue: true })` throws an error that names both.
 
-```json
-{
-  "extends": "@nomercy-entertainment/strict-typescript/tsconfig/vue.json",
-  "include": ["src"]
-}
+### A whole project
+
+One call carries the options for a project:
+
+```js
+export default strict({
+  vue: true,
+  i18n: { localeDir: ['src/i18n/locales/*.json'] },
+  tailwind: { entryPoint: 'src/styles/main.css' },
+  generated: ['src/components/ui/**'],
+  oxlint: true,
+});
 ```
 
-The Vue packages load only when `vue` is true.
-A project without Vue never needs them.
-If they are missing, `strict({ vue: true })` throws an error that names both packages.
-
-### Editorconfig
-
-Copy `node_modules/@nomercy-entertainment/strict-typescript/.editorconfig` into your project root.
+The result is a plain array, so you can add your own entries after it.
 
 ## Options
 
-`strict(options?)` returns a flat config array. Every option is optional.
+`strict(options?)`. Every option is optional. [All options in detail](docs/options.md).
 
-| Option            | Default                                           | What it does                                                         |
-| ----------------- | ------------------------------------------------- | -------------------------------------------------------------------- |
-| `vue`             | `false`                                           | Lint `.vue` files and templates too.                                 |
-| `files`           | `['**/*.{ts,mts,cts,tsx}']`, plus `'**/*.vue'`    | Files the config lints.                                              |
-| `ignores`         | none                                              | Added to `dist`, `dist-ssr`, `dev-dist` and `coverage`.              |
-| `typeChecked`     | `true`                                            | Set to `false` to drop the rules that need type information.         |
-| `tsconfigRootDir` | the working directory                             | Folder that holds the tsconfig for typed rules.                      |
-| `arrayHelpers`    | `@nomercy-entertainment/strict-typescript/array`  | Module named in the `merge` and `keysOf` messages.                   |
-| `testFiles`       | `['**/__tests__/**', '**/*.{spec,test}.ts']`      | Files where the `unknown`, `keyof`, cast and compat-word checks stay off. |
-| `vitest`          | on when `@vitest/eslint-plugin` resolves          | Vitest rules. `false` turns them off. A list of globs sets the files. |
-| `playwright`      | on when `eslint-plugin-playwright` resolves       | Playwright rules for `e2e/**/*.{test,spec}.{js,ts,jsx,tsx}`. `false` turns them off. A list of globs sets the files. |
-| `i18n`            | off                                               | vue-i18n rules and the duplicate-key check for locale files. Takes `localeDir` and `messageSyntaxVersion`. |
-| `tailwind`        | off                                               | Canonical Tailwind classes. Takes `entryPoint` (the CSS file that imports Tailwind, relative to `tsconfigRootDir` or the working directory) and `ignores`. |
-| `compatVocab`     | none                                              | Words for `strict/no-compat-vocab`: `identifiers`, `identifierPatterns`, `classes`, `commentSubstrings`. Comment markers extend the built-in ones. |
-| `generated`       | none                                              | Globs of generated files. They skip the style rules, and `no-explicit-any` and `no-unused-vars` are off there. |
-| `importBoundaries` | none                                             | Imports that only some folders may use. Each entry has `module` (a regex), `allowedIn` (globs) and `message`. |
-| `oxlint`          | off                                               | `true` turns off the ESLint rules that oxlint covers, from the shipped `oxlintrc.json`. A string names your own file. |
+| Option             | Default                                        | What it does                                                      |
+| ------------------ | ---------------------------------------------- | ----------------------------------------------------------------- |
+| `vue`              | `false`                                        | Lint `.vue` files and templates too.                              |
+| `files`            | TypeScript files, plus `.vue` with `vue`       | Files the config lints.                                           |
+| `ignores`          | none                                           | Added to `dist`, `dist-ssr`, `dev-dist` and `coverage`.           |
+| `typeChecked`      | `true`                                         | `false` drops the rules that need type information.               |
+| `tsconfigRootDir`  | the working directory                          | Folder with the `tsconfig.json` the typed rules read.             |
+| `arrayHelpers`     | `@nomercy-entertainment/strict-typescript/array` | Module the `merge` and `keysOf` messages name.                  |
+| `testFiles`        | `**/__tests__/**`, `**/*.{spec,test}.ts`       | Files where the unknown, keyof, cast and compat-word checks stay off. |
+| `vitest`           | on when the plugin resolves                    | Vitest rules. `false` turns them off.                             |
+| `playwright`       | on when the plugin resolves                    | Playwright rules for `e2e/` specs.                                |
+| `i18n`             | off                                            | vue-i18n rules and the duplicate-key check for locale files.      |
+| `tailwind`         | off                                            | Canonical Tailwind classes.                                       |
+| `compatVocab`      | none                                           | Words for `strict/no-compat-vocab`.                               |
+| `generated`        | none                                           | Generated files. They skip the style rules.                       |
+| `importBoundaries` | none                                           | Imports that only some folders may use.                           |
+| `oxlint`           | off                                            | Turns off the ESLint rules that oxlint covers.                    |
 
-The optional options need their plugin packages.
-Install them only for the options you use. A missing package makes `strict()` throw an error that names it.
+## The 12 rules
 
-| Option                  | Packages                                                       |
-| ----------------------- | -------------------------------------------------------------- |
-| `vue`                   | `eslint-plugin-vue`, `vue-eslint-parser`                       |
-| `vitest`                | `@vitest/eslint-plugin`                                        |
-| `playwright`            | `eslint-plugin-playwright`                                     |
-| `i18n`                  | `@intlify/eslint-plugin-vue-i18n`, `jsonc-eslint-parser`       |
-| `tailwind`              | `eslint-plugin-better-tailwindcss`                             |
-| `oxlint`                | `eslint-plugin-oxlint`                                         |
+They live under the plugin name `strict`, for example `strict/body-shape`.
+`strict()` turns all of them on. Each name links to its page, with a wrong and a right example.
 
-Setting `typeChecked: false` drops these rules:
+| Rule | What it catches | Fixable |
+| ---- | --------------- | ------- |
+| [`strict/arrow-ternary-body`](docs/rules/arrow-ternary-body.md) | A ternary arrow body that does not start on the next line. | Yes |
+| [`strict/body-shape`](docs/rules/body-shape.md) | An `if` body that is not a bare exit, a returned value on the next line, or a block. | Yes |
+| [`strict/generic-over-annotation`](docs/rules/generic-over-annotation.md) | An annotation that should be a generic on the call. Needs types. | Yes |
+| [`strict/max-call-nesting`](docs/rules/max-call-nesting.md) | Calls nested more than 2 deep. | No |
+| [`strict/members-per-line`](docs/rules/members-per-line.md) | An object with three or more entries that shares lines. | Yes |
+| [`strict/no-compat-vocab`](docs/rules/no-compat-vocab.md) | Compat markers in comments and the compat words you list. | No |
+| [`strict/no-history-comments`](docs/rules/no-history-comments.md) | Bug-number history, section marks, and TODO with no issue. | No |
+| [`strict/no-object-literal-cast`](docs/rules/no-object-literal-cast.md) | `{ ... } as T`. | No |
+| [`strict/no-redundant-type-annotation`](docs/rules/no-redundant-type-annotation.md) | An annotation that repeats the value's type. Needs types. | Yes |
+| [`strict/no-single-letter-ident`](docs/rules/no-single-letter-ident.md) | One-letter names, except `x`, `y`, `z`, `i`, `j` and `k`. | No |
+| [`strict/no-unknown-cast`](docs/rules/no-unknown-cast.md) | `as unknown as T` with no comment that says why. | No |
+| [`strict/trailing-arrow-argument`](docs/rules/trailing-arrow-argument.md) | An arrow after another argument that starts its body on the arrow line. | Yes |
 
-- `strict/no-redundant-type-annotation`
-- `strict/generic-over-annotation`
-- `@typescript-eslint/no-deprecated`
+Around the rules, `strict()` also sets the typescript-eslint recommended config, unused-import removal, the stylistic format rules (2 spaces, single quotes, semicolons, 100 columns), blank-line padding, and the restricted-syntax checks behind the `merge` and `keysOf` messages.
 
-The rules live under the plugin name `strict`, for example `strict/body-shape`.
-The same plugin is a named export: `import { plugin, rules } from '@nomercy-entertainment/strict-typescript'`.
+## Tool configs
 
-## Array helpers
+| File             | Tool    | What it holds                                                        |
+| ---------------- | ------- | -------------------------------------------------------------------- |
+| `oxlintrc.json`  | oxlint  | The `correctness` category as errors.                                |
+| `cspell.json`    | cspell  | American English: flags British spellings and suggests the American one. |
+| `jscpd.json`     | jscpd   | Duplicate-code limits: 40 tokens, a 2.42 percent threshold.          |
+| `.editorconfig`  | editors | Two spaces, LF line ends, 100 columns.                               |
 
-Two rules point you to small helpers.
-They live at `@nomercy-entertainment/strict-typescript/array`.
+Details and commands: [tool configs](docs/tools.md). The tsconfig presets and every flag they set: [tsconfig presets](docs/tsconfig.md).
 
-| Helper                | What it does                                                          |
-| --------------------- | --------------------------------------------------------------------- |
-| `merge(a, b)`         | Joins lists. Tuples stay typed.                                       |
-| `keysOf(table)`       | Returns the keys of a constant table, typed.                          |
-| `oneOf(list, value)`  | Narrows a plain string to a known set. Needs no cast.                 |
-| `lookup(table, key)`  | Reads a constant table with a plain string key. Needs no cast.        |
+## Git hooks
 
-If your project has its own helpers, set `arrayHelpers` to that module.
-The messages then name your module.
+`npx strict-typescript hooks install` writes two hooks into `.githooks` and sets `core.hooksPath`.
+
+- `commit-msg` refuses a message with a `Co-Authored-By` or similar attribution trailer.
+- `pre-push` runs `npm run lint` and `npm run typecheck` on the pushed commit in its own worktree. Skip it once with `STRICT_TS_SKIP_PREPUSH=1`.
+
+A hook that was there before still runs, as `<hook>.local`. `hooks uninstall` reverses it. See [hooks](docs/hooks.md).
+
+## CLI
+
+| Command                 | What it does                                              |
+| ----------------------- | --------------------------------------------------------- |
+| `init [--vue] [--node]` | Writes the config files and scripts, then installs hooks. |
+| `hooks install`         | Installs the git hooks.                                   |
+| `hooks uninstall`       | Removes them.                                             |
+| `check`                 | Runs eslint, the typecheck, and cspell, jscpd and oxlint when installed. |
+
+See [the CLI](docs/cli.md).
 
 ## What is in it
 
@@ -144,110 +170,39 @@ Two of them (Vue essential and typescript-eslint recommended) share one row belo
 All 19 rows are in this package. The 8 rows that need a plugin or a project folder are options.
 The five hygiene rules come from the NoMercy player libraries. They are extra, so they have no row.
 
-| #   | Source block                              | Status | Where it went                                                        |
-| --- | ----------------------------------------- | ------ | -------------------------------------------------------------------- |
-| 1   | `app/files-to-lint`                       | In     | `strict/files-to-lint`, set by the `files` option.                   |
-| 2   | `globalIgnores`                           | In     | `strict/ignores`, plus the `ignores` option.                         |
-| 3   | Vue essential and typescript-eslint recommended | In | typescript-eslint `recommended`. With `vue: true`, also Vue `flat/essential` and the Vue parser with the TypeScript parser inside. |
-| 4   | `app/unused-imports`                      | In     | `strict/unused-imports`, same options.                               |
-| 5   | `app/no-redundant-type-annotation`        | In     | `strict/no-redundant-type-annotation`. Two custom rules and `no-deprecated`. |
-| 6   | `app/format`                              | In     | `strict/format`. Stylistic preset, `no-nested-ternary`, `max-len` 100. |
-| 7   | `app/format-vue-template`                 | In     | `strict/format-vue-template`. Only with `vue: true`.                 |
-| 8   | `app/blank-lines`                         | In     | `strict/blank-lines`. All padding lines.                             |
-| 9   | `app/layout`                              | In     | `strict/layout`. Ternary, indent and five custom rules.              |
-| 10  | `app/merge-lists`                         | In     | `strict/merge-lists`. Three selectors. Messages name `arrayHelpers`. |
-| 11  | `app/no-unknown-tests`                    | In     | `strict/no-unknown-tests`, set by `testFiles`.                       |
-| 12  | `pluginPlaywright` (e2e)                  | In     | `strict/playwright`, set by the `playwright` option.                 |
-| 13  | `pluginVitest` (tests)                    | In     | `strict/vitest`, set by the `vitest` option.                         |
-| 14  | `app/vue-i18n`                            | In     | `strict/i18n`, set by the `i18n` option.                             |
-| 15  | `app/vue-i18n-locales`                    | In     | `strict/i18n-locales`, set by the `i18n` option.                     |
-| 16  | `app/tailwind-canonical`                  | In     | `strict/tailwind-canonical`, set by the `tailwind` option.           |
-| 17  | `app/shadcn-generated`                    | In     | `strict/generated`, set by the `generated` option.                   |
-| 18  | `app/api-client-only-in-api`              | In     | `strict/import-boundaries-*`, set by the `importBoundaries` option.  |
-| 19  | `pluginOxlint`                            | In     | The `oxlint` option and the shipped `oxlintrc.json`.                 |
+| #   | Source block                                    | Where it went                                                        |
+| --- | ----------------------------------------------- | -------------------------------------------------------------------- |
+| 1   | `app/files-to-lint`                             | `strict/files-to-lint`, set by the `files` option.                   |
+| 2   | `globalIgnores`                                 | `strict/ignores`, plus the `ignores` option.                         |
+| 3   | Vue essential and typescript-eslint recommended | typescript-eslint `recommended`. With `vue: true`, also Vue `flat/essential` and the Vue parser with the TypeScript parser inside. |
+| 4   | `app/unused-imports`                            | `strict/unused-imports`.                                             |
+| 5   | `app/no-redundant-type-annotation`              | `strict/no-redundant-type-annotation`: two custom rules and `no-deprecated`. |
+| 6   | `app/format`                                    | `strict/format`: stylistic preset, `no-nested-ternary`, `max-len` 100. |
+| 7   | `app/format-vue-template`                       | `strict/format-vue-template`, only with `vue: true`.                 |
+| 8   | `app/blank-lines`                               | `strict/blank-lines`: all padding lines.                             |
+| 9   | `app/layout`                                    | `strict/layout`: ternary, indent and five custom rules.              |
+| 10  | `app/merge-lists`                               | `strict/merge-lists`: three selectors. Messages name `arrayHelpers`. |
+| 11  | `app/no-unknown-tests`                          | `strict/no-unknown-tests`, set by `testFiles`.                       |
+| 12  | `pluginPlaywright` (e2e)                        | `strict/playwright`, set by the `playwright` option.                 |
+| 13  | `pluginVitest` (tests)                          | `strict/vitest`, set by the `vitest` option.                         |
+| 14  | `app/vue-i18n`                                  | `strict/i18n`, set by the `i18n` option.                             |
+| 15  | `app/vue-i18n-locales`                          | `strict/i18n-locales`, set by the `i18n` option.                     |
+| 16  | `app/tailwind-canonical`                        | `strict/tailwind-canonical`, set by the `tailwind` option.           |
+| 17  | `app/shadcn-generated`                          | `strict/generated`, set by the `generated` option.                   |
+| 18  | `app/api-client-only-in-api`                    | `strict/import-boundaries-*`, set by the `importBoundaries` option.  |
+| 19  | `pluginOxlint`                                  | The `oxlint` option and the shipped `oxlintrc.json`.                 |
 
-## The custom rules
+The five hygiene rules are `strict/no-single-letter-ident`, `strict/no-history-comments`, `strict/no-object-literal-cast`, `strict/no-unknown-cast` and `strict/no-compat-vocab`.
+The config block that holds them is `strict/hygiene`, and `strict/hygiene-tests` turns three of them off in test files.
 
-| Rule                                   | Needs types | What it checks                                                       |
-| -------------------------------------- | ----------- | -------------------------------------------------------------------- |
-| `strict/arrow-ternary-body`            | No          | A ternary arrow body starts on the next line, without brackets.      |
-| `strict/body-shape`                    | No          | An `if` body is a bare exit, a returned value on the next line, or a block. |
-| `strict/generic-over-annotation`       | Yes         | A generic call takes its type as a generic, not an annotation.       |
-| `strict/max-call-nesting`              | No          | Calls nest at most 2 deep. Name the inner steps.                     |
-| `strict/members-per-line`              | No          | Objects with three or more entries put each entry on its own line.   |
-| `strict/no-compat-vocab`               | No          | Bans compat words: marked comments (`@deprecated`, `compat alias`), and the identifiers and classes you list in `compatVocab`. Off in test files. |
-| `strict/no-history-comments`           | No          | Bans bug-number history, spec section marks and TODO or FIXME with no issue reference. |
-| `strict/no-object-literal-cast`        | No          | Bans `{ ... } as T`. Type the value at construction. Off in test files. |
-| `strict/no-redundant-type-annotation`  | Yes         | Drops an annotation that repeats the value's type.                   |
-| `strict/no-single-letter-ident`        | No          | Bans one-letter names. Only `x`, `y`, `z`, `i`, `j` and `k` pass.    |
-| `strict/no-unknown-cast`               | No          | Bans `as unknown as T` without an inline comment that says why. Off in test files. |
-| `strict/trailing-arrow-argument`       | No          | An arrow after another argument starts its body on the line after `=>`. |
+## Versioning
 
-`strict()` turns all twelve on. Only `strict/generic-over-annotation` and
-`strict/no-redundant-type-annotation` need `typeChecked`.
+The package follows semantic versioning.
+A change that can fail a project that passed before, such as a new rule in `strict()`, a stricter rule, a removed option or a changed default, arrives in a major release.
+Fixes and new options that are off by default arrive in minor and patch releases.
+The [changelog](CHANGELOG.md) lists every release.
 
-## Presets for tsconfig
-
-| Preset                  | Extends  | Use it for                                                           |
-| ----------------------- | -------- | -------------------------------------------------------------------- |
-| `tsconfig/base.json`    | none     | The shared strict flags.                                             |
-| `tsconfig/dom.json`     | base     | Browser code and libraries. `ES2022`, `DOM`, bundler resolution.     |
-| `tsconfig/node.json`    | base     | Node code. `nodenext` modules, target `es2024`, Node types.          |
-| `tsconfig/vue.json`     | dom      | Vue apps. Adds `jsx: preserve` and `jsxImportSource: vue`.           |
-| `tsconfig/strictest.json` | base   | Adds `noImplicitOverride`, `noFallthroughCasesInSwitch`, `noPropertyAccessFromIndexSignature` and `isolatedModules`. |
-
-The base flags are `strict`, `noUncheckedIndexedAccess`, `noImplicitThis`, `verbatimModuleSyntax`,
-`moduleDetection: force`, `useDefineForClassFields`, `esModuleInterop`,
-`forceConsistentCasingInFileNames`, `resolveJsonModule`, `skipLibCheck` and `target: ESNext`.
-
-The `node` preset needs `@types/node`.
-To stack a preset, list both: `"extends": [".../tsconfig/node.json", ".../tsconfig/strictest.json"]`.
-
-## Project options
-
-One call carries a whole project.
-
-```js
-import strict from '@nomercy-entertainment/strict-typescript';
-
-export default strict({
-  vue: true,
-  i18n: { localeDir: ['src/i18n/locales/*.json'] },
-  tailwind: { entryPoint: 'src/styles/main.css' },
-  generated: ['src/components/ui/**'],
-  importBoundaries: [
-    {
-      module: '(^|/)api/client$',
-      allowedIn: ['src/api/**'],
-      message: 'Only src/api may import the API client.',
-    },
-  ],
-  oxlint: true,
-});
-```
-
-The array form of the flat config still lets you append anything of your own.
-
-## Tool configs
-
-The package also ships three tool configs. Point each tool at the file.
-
-| File             | Tool    | What it holds                                                       |
-| ---------------- | ------- | ------------------------------------------------------------------- |
-| `oxlintrc.json`  | oxlint  | The `correctness` category as errors. The `oxlint` option reads it. |
-| `cspell.json`    | cspell  | American English: flags British spellings and suggests the American one. |
-| `jscpd.json`     | jscpd   | Duplicate-code limits: 40 tokens, a 2.42 percent threshold.         |
-
-```sh
-npx oxlint -c node_modules/@nomercy-entertainment/strict-typescript/oxlintrc.json
-npx cspell --config node_modules/@nomercy-entertainment/strict-typescript/cspell.json "src/**"
-npx jscpd --config node_modules/@nomercy-entertainment/strict-typescript/jscpd.json src
-```
-
-In a cspell config, import it instead:
-`{ "import": ["@nomercy-entertainment/strict-typescript/cspell.json"] }`.
-
-## Develop
+## Contributing
 
 ```sh
 npm ci
@@ -257,9 +212,12 @@ npm test
 npm run lint
 ```
 
-`npm test` runs the twelve rule specs, `test/config.spec.ts` and `test/tools.spec.ts`.
-The config test lints `fixtures/bad.ts` and expects every planted defect.
-It lints `fixtures/good.ts` in the same run and expects none.
+`npm test` runs the twelve rule specs, the config test, the tool config test, the CLI test and the docs test.
+The config test lints `fixtures/bad.ts` and expects every planted defect. It lints `fixtures/good.ts` in the same run and expects none.
+The package lints itself with the built output, so run `npm run build` before `npm run lint`.
+
+A new rule needs a spec, a planted defect in `fixtures/bad.ts`, a page in `docs/rules/` and a row in the rule table above.
+The docs test fails when a rule has no page.
 
 ## License
 
